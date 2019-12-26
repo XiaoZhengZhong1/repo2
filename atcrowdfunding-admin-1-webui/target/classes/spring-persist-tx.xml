@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+
+    <!-- 配置事务管理器 -->
+	<bean id="dataSourceTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	
+		
+	<!-- 配置事务通知 -->
+	<tx:advice id="txAdvice" transaction-manager="dataSourceTransactionManager">
+		<!-- 配置事务属性 -->
+		<tx:attributes>
+			<!-- 将查询方法设置为只读 -->
+			<tx:method name="get*" read-only="true"/>
+			<tx:method name="query*" read-only="true"/>
+			<tx:method name="find*" read-only="true"/>
+			<tx:method name="count*" read-only="true"/>
+			<tx:method name="login*" read-only="true"/>
+			
+			<!-- 注意是 方法 就是方法带增删改的,设置在自己新开的事务中,一旦出错就回滚属性 -->
+			<!-- 给增删改方法设置属性 -->
+			<!-- propagation：配置传播行为，REQUIRES_NEW表示必须工作在自己新开的事务中，不受其他事务回滚影响 -->
+			<!-- rollback-for：配置回滚的异常，默认是根据运行时异常回滚，为了抛出编译时异常也回滚，设置为java.lang.Exception -->
+			<tx:method name="save*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+			<tx:method name="remove*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+			<tx:method name="update*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+			<tx:method name="Batch" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+			
+		</tx:attributes>
+	</tx:advice>
+	
+	
+	<!-- 配置事务切面 -->
+	<aop:config>
+	
+		<!-- 切入点表达式 -->
+		<aop:pointcut expression="execution(* *..*Service.*(..))" id="txPointCut"/>
+		
+		<!-- 将事务通知和切入点表达式关联起来 -->
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="txPointCut"/>
+	</aop:config>
+	
+	<!-- @Transactional 注解方式声明事务 -->
+	<!-- <tx:annotation-driven transaction-manager="dataSourceTransactionManager"/> -->
+	
+</beans>
