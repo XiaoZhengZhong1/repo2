@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+	<!-- 扫描AdminService -->
+	<context:component-scan base-package="com.atguigu.crowd.funding.service.*" />
+
+	<!-- 加载外部属性文件 -->
+	<context:property-placeholder location="classpath:jdbc.properties" />
+
+	<!-- 配置数据源 -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+		<property name="username" value="${jdbc.user}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="driverClassName" value="${jdbc.driver}" />
+	</bean>
+
+	<!-- 配置SqlSessionFactoryBean -->
+	<bean id="sqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
+
+		<!-- MyBatis配置文件所在位置 -->
+		<property name="configLocation" value="classpath:mybatis/mybatis-config.xml" />
+
+		<!-- 配置Mapper配置文件位置 -->
+		<property name="mapperLocations" value="classpath:mybatis/mapper/*Mapper.xml" />
+
+		<!-- 装配数据源 -->
+		<property name="dataSource" ref="dataSource" />
+
+		<!-- 配置PageHelper插件 -->
+		<property name="plugins">
+			<array>
+				<!-- 配置PageHelper全类名 -->
+				<bean class="com.github.pagehelper.PageHelper">
+					<!-- 配置相关参数 -->
+					<property name="properties">
+						<props>
+							<!-- 数据库方言指定数据库类型为MySQL -->
+							<prop key="dialect">mysql</prop>
+
+							<!-- 配置自动修正页码 -->
+							<!-- pageNo的有效范围：1~总页数 -->
+							<prop key="reasonable">true</prop>
+						</props>
+					</property>
+				</bean>
+			</array>
+		</property>
+
+
+	</bean>
+	<!-- 配置MyBatis扫描器 -->
+	<bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- 指定Mapper接口所在包 -->
+		<property name="basePackage" value="com.atguigu.crowd.funding.mapper" />
+	</bean>
+
+
+</beans>
